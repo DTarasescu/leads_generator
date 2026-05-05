@@ -185,6 +185,8 @@ export default function DiscoverLeadsPage() {
   const [leads, setLeads] = useState([]);
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [runningMethod, setRunningMethod] = useState("");
+  const [domainsInput, setDomainsInput] = useState("example.com\nsmallbiz.ro");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -220,6 +222,30 @@ export default function DiscoverLeadsPage() {
     }
   }
 
+  async function runMethod(label, endpoint, payload) {
+    if (!token) return;
+    setRunningMethod(label);
+    try {
+      const r = await fetch(`${API_BASE}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        showToast(`${label}: ${d.error || "failed"}`, { type: "error" });
+        return;
+      }
+
+      const imported = d.imported ?? d.found ?? d.posts_found ?? 0;
+      showToast(`${label} finished. Result: ${imported}`, { type: "success" });
+    } catch {
+      showToast(`${label}: network error`, { type: "error" });
+    } finally {
+      setRunningMethod("");
+    }
+  }
+
   if (!user) return null;
 
   return (
@@ -228,6 +254,109 @@ export default function DiscoverLeadsPage() {
       <div className="page">
         <h1 className="title">🔍 Discover New Leads</h1>
         <p className="sub">Search local businesses by type and location. AI scores each one for outreach potential.</p>
+
+        <div className="methods-panel">
+          <div className="methods-head">
+            <h2>New Methods Runner</h2>
+            <p>Trigger the newly added lead generators directly from this page.</p>
+          </div>
+
+          <div className="methods-grid">
+            <button
+              disabled={!!runningMethod || !form.businessType || !form.city}
+              onClick={() => runMethod("Google Reviews Alerts", "/api/google-reviews-alerts", {
+                query: form.businessType,
+                location: `${form.city}${form.country ? `, ${form.country}` : ""}`,
+                min_reviews: 10,
+                max_rating: 3.9,
+                limit: 20,
+              })}
+            >
+              {runningMethod === "Google Reviews Alerts" ? "Running..." : "Run Google Reviews Alerts"}
+            </button>
+
+            <button
+              disabled={!!runningMethod}
+              onClick={() => runMethod("Press Release Monitor", "/api/press-release-monitor", {
+                query: `${form.businessType || "startup"} OR hiring OR expansion OR partnership`,
+                country: (form.country || "us").slice(0, 2).toLowerCase(),
+                max: 15,
+              })}
+            >
+              {runningMethod === "Press Release Monitor" ? "Running..." : "Run Press Release Monitor"}
+            </button>
+
+            <button
+              disabled={!!runningMethod}
+              onClick={() => runMethod("Crunchbase Funding", "/api/crunchbase-funding", {
+                limit: 20,
+                min_funding_usd: 1000000,
+              })}
+            >
+              {runningMethod === "Crunchbase Funding" ? "Running..." : "Run Crunchbase Funding"}
+            </button>
+
+            <button
+              disabled={!!runningMethod}
+              onClick={() => runMethod("Zapier Test Ingest", "/api/zapier-webhook", {
+                owner_email: user.email,
+                name: "Zapier Sample Lead",
+                business_type: form.businessType || "Agency",
+                city: form.city || null,
+                country: form.country || null,
+                source: "zapier",
+              })}
+            >
+              {runningMethod === "Zapier Test Ingest" ? "Running..." : "Run Zapier Test Ingest"}
+            </button>
+
+            <button
+              disabled={!!runningMethod}
+              onClick={() => runMethod("Make Test Ingest", "/api/make-webhook", {
+                owner_email: user.email,
+                name: "Make Sample Lead",
+                business_type: form.businessType || "SaaS",
+                city: form.city || null,
+                country: form.country || null,
+                source: "make",
+              })}
+            >
+              {runningMethod === "Make Test Ingest" ? "Running..." : "Run Make Test Ingest"}
+            </button>
+
+            <button
+              disabled={!!runningMethod}
+              onClick={() => runMethod("Chrome Extension Capture", "/api/chrome-extension-capture", {
+                name: "Captured From Browser",
+                business_type: form.businessType || "Local Business",
+                city: form.city || null,
+                country: form.country || null,
+                page_title: "Lead Candidate",
+                page_url: "https://example.com",
+              })}
+            >
+              {runningMethod === "Chrome Extension Capture" ? "Running..." : "Run Chrome Extension Capture"}
+            </button>
+          </div>
+
+          <div className="whois-box">
+            <label>WHOIS Expiry Domains (one per line)</label>
+            <textarea
+              rows={4}
+              value={domainsInput}
+              onChange={(e) => setDomainsInput(e.target.value)}
+            />
+            <button
+              disabled={!!runningMethod}
+              onClick={() => runMethod("WHOIS Expiry", "/api/whois-expiry-leads", {
+                domains: domainsInput.split(/\r?\n/).map((d) => d.trim()).filter(Boolean),
+                max_days: 45,
+              })}
+            >
+              {runningMethod === "WHOIS Expiry" ? "Running..." : "Run WHOIS Expiry"}
+            </button>
+          </div>
+        </div>
 
         <form onSubmit={handleSearch} className="search-form">
           <input
@@ -287,6 +416,65 @@ export default function DiscoverLeadsPage() {
           background: var(--surface-strong); border-radius: var(--radius-lg);
           padding: 20px; margin-bottom: 32px;
           box-shadow: var(--shadow-md);
+        }
+        .methods-panel {
+          background: var(--surface-strong);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-md);
+          padding: 20px;
+          margin-bottom: 20px;
+          border: 1px solid var(--line);
+        }
+        .methods-head h2 {
+          margin: 0 0 6px;
+          font-size: 1.08rem;
+        }
+        .methods-head p {
+          margin: 0 0 12px;
+          color: var(--muted);
+          font-size: 0.9rem;
+        }
+        .methods-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+        .methods-grid button, .whois-box button {
+          padding: 10px 12px;
+          border-radius: 9px;
+          border: 1.5px solid var(--line);
+          background: var(--canvas);
+          color: var(--ink);
+          font-weight: 600;
+          font-size: 0.88rem;
+          text-align: left;
+        }
+        .methods-grid button:hover:not(:disabled), .whois-box button:hover:not(:disabled) {
+          border-color: var(--accent);
+          color: var(--accent);
+        }
+        .methods-grid button:disabled, .whois-box button:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
+        .whois-box {
+          display: grid;
+          gap: 8px;
+        }
+        .whois-box label {
+          color: var(--muted);
+          font-size: 0.85rem;
+          font-weight: 600;
+        }
+        .whois-box textarea {
+          border: 1.5px solid var(--line);
+          border-radius: 10px;
+          padding: 10px;
+          font-size: 0.9rem;
+          background: var(--canvas);
+          color: var(--ink);
+          resize: vertical;
         }
         .search-form input, .search-form select {
           flex: 1; min-width: 160px;
