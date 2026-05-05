@@ -19,6 +19,33 @@ const workflow = [
   { title: "4. Convert", text: "Track outcomes, sync CRM, optimize with analytics and A/B tests." },
 ];
 
+const demoSteps = [
+  { title: "Sign In", text: "Create an account or sign in, then open your lead inbox." },
+  { title: "Discover", text: "Use Discover for local search or Methods Lab for advanced lead sources." },
+  { title: "Score + Enrich", text: "Run AI scoring and enrichment to rank the best opportunities first." },
+  { title: "Launch Outreach", text: "Send personalized messages via email, SMS, WhatsApp, or voice." },
+  { title: "Track & Optimize", text: "Use analytics and A/B tests to improve conversion rates continuously." },
+];
+
+const faq = [
+  {
+    q: "Is this app only for local businesses?",
+    a: "No. It supports local and online businesses, including startups, agencies, and service providers.",
+  },
+  {
+    q: "Can I use it before setting every API key?",
+    a: "Yes. Core flows work with Supabase and auth. Extra channels become available as you add provider keys.",
+  },
+  {
+    q: "Do I need technical skills to run lead methods?",
+    a: "Not much. Discover and Methods Lab provide ready-to-run presets, plus editable payloads for advanced use.",
+  },
+  {
+    q: "Can teams share repeatable method setups?",
+    a: "Yes. Methods Lab supports preset export/import so teams can share standardized run configurations.",
+  },
+];
+
 export default function AboutPage() {
   const [user, setUser] = useState(null);
 
@@ -87,6 +114,33 @@ export default function AboutPage() {
             Use the Discover page for local prospecting, Methods Lab for advanced sources, and Automation for template-driven outreach.
             Teams can run repeatable playbooks and keep visibility across the full lead lifecycle.
           </p>
+        </section>
+
+        <section className="section">
+          <h2>Quick Demo Walkthrough</h2>
+          <div className="demo-grid">
+            {demoSteps.map((step, idx) => (
+              <article key={step.title} className="demo-step">
+                <div className="step-index">{idx + 1}</div>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.text}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section">
+          <h2>FAQ</h2>
+          <div className="faq-list">
+            {faq.map((item) => (
+              <details key={item.q} className="faq-item">
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
+          </div>
         </section>
       </main>
 
@@ -227,6 +281,64 @@ export default function AboutPage() {
         }
         .flow-card p {
           margin: 6px 0 0;
+          font-size: 0.88rem;
+          color: #334155;
+          line-height: 1.45;
+        }
+        .demo-grid {
+          display: grid;
+          gap: 8px;
+        }
+        .demo-step {
+          display: grid;
+          grid-template-columns: 28px 1fr;
+          gap: 10px;
+          align-items: start;
+          padding: 10px;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          background: #f8fafc;
+        }
+        .step-index {
+          width: 28px;
+          height: 28px;
+          display: grid;
+          place-items: center;
+          border-radius: 999px;
+          background: #0f766e;
+          color: #ffffff;
+          font-size: 0.8rem;
+          font-weight: 800;
+        }
+        .demo-step h3 {
+          margin: 0;
+          font-size: 0.92rem;
+          color: #0f172a;
+        }
+        .demo-step p {
+          margin: 4px 0 0;
+          font-size: 0.86rem;
+          color: #334155;
+          line-height: 1.45;
+        }
+        .faq-list {
+          display: grid;
+          gap: 8px;
+        }
+        .faq-item {
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          background: #f8fafc;
+          padding: 10px 12px;
+        }
+        .faq-item summary {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #0f172a;
+          cursor: pointer;
+        }
+        .faq-item p {
+          margin: 8px 0 0;
           font-size: 0.88rem;
           color: #334155;
           line-height: 1.45;
