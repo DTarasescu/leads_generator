@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../lib/supabase";
 import { API_BASE } from "../lib/api-utils";
@@ -7,6 +7,7 @@ import { useToast } from "../components/ToastProvider";
 
 const HISTORY_STORAGE_KEY = "methods-lab-history";
 const PRESETS_STORAGE_KEY = "methods-lab-presets";
+const BATCH_DELAY_MS = 800;
 
 const METHODS = [
   {
@@ -149,6 +150,10 @@ export default function MethodsLabPage() {
   const [history, setHistory] = useState([]);
   const [presets, setPresets] = useState({});
   const [presetName, setPresetName] = useState("");
+  const [selected, setSelected] = useState(() => Object.fromEntries(METHODS.map((m) => [m.key, false])));
+  const [batchRunning, setBatchRunning] = useState(false);
+  const [batchSummary, setBatchSummary] = useState(null);
+  const importInputRef = useRef(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -184,6 +189,7 @@ export default function MethodsLabPage() {
   }, [router]);
 
   const activeMethod = useMemo(() => METHODS.find((m) => m.key === active), [active]);
+  const selectedMethods = useMemo(() => METHODS.filter((m) => selected[m.key]), [selected]);
 
   function updatePayload(nextText) {
     setPayloads((prev) => ({ ...prev, [active]: nextText }));
@@ -195,6 +201,70 @@ export default function MethodsLabPage() {
       localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(next));
       return next;
     });
+  }
+
+  async function executeMethod(method, options = {}) {
+    const { showToastOnSuccess = true, showToastOnError = true } = options;
+    if (!method || !token) return { ok: false, status: 0, error: "Unauthorized" };
+
+    let body;
+    try {
+      body = JSON.parse(payloads[method.key] || "{}");
+    } catch {
+      if (showToastOnError) showToast("Payload is not valid JSON", { type: "error" });
+      return { ok: false, status: 0, error: "Invalid JSON payload" };
+    }
+
+    const startedAt = new Date().toISOString();
+
+    try {
+      const response = await fetch(`${API_BASE}${method.endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = { raw: "Non-JSON response" };
+      }
+
+      const preview = JSON.stringify(data).slice(0, 280);
+      appendHistory({
+        id: `${startedAt}-${method.key}`,
+        at: startedAt,
+        title: method.title,
+        endpoint: method.endpoint,
+        status: response.status,
+        ok: response.ok,
+        preview,
+      });
+
+      if (response.ok) {
+        if (showToastOnSuccess) showToast(`${method.title} completed`, { type: "success" });
+      } else if (showToastOnError) {
+        showToast(`${method.title} failed (${response.status})`, { type: "error" });
+      }
+
+      return { ok: response.ok, status: response.status, data };
+    } catch {
+      appendHistory({
+        id: `${startedAt}-${method.key}`,
+        at: startedAt,
+        title: method.title,
+        endpoint: method.endpoint,
+        status: 0,
+        ok: false,
+        preview: "Network error",
+      });
+      if (showToastOnError) showToast("Network error", { type: "error" });
+      return { ok: false, status: 0, error: "Network error" };
+    }
   }
 
   function persistPresets(nextPresets) {
@@ -253,64 +323,120 @@ export default function MethodsLabPage() {
   async function runCurrent() {
     if (!activeMethod || !token) return;
 
-    let body;
-    try {
-      body = JSON.parse(payloads[activeMethod.key] || "{}");
-    } catch {
-      showToast("Payload is not valid JSON", { type: "error" });
-      return;
-    }
-
     setRunning(activeMethod.key);
-    const startedAt = new Date().toISOString();
-
     try {
-      const response = await fetch(`${API_BASE}${activeMethod.endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      let data = null;
-      try {
-        data = await response.json();
-      } catch {
-        data = { raw: "Non-JSON response" };
-      }
-
-      const preview = JSON.stringify(data).slice(0, 280);
-      appendHistory({
-        id: `${startedAt}-${activeMethod.key}`,
-        at: startedAt,
-        title: activeMethod.title,
-        endpoint: activeMethod.endpoint,
-        status: response.status,
-        ok: response.ok,
-        preview,
-      });
-
-      if (response.ok) {
-        showToast(`${activeMethod.title} completed`, { type: "success" });
-      } else {
-        showToast(`${activeMethod.title} failed (${response.status})`, { type: "error" });
-      }
-    } catch {
-      appendHistory({
-        id: `${startedAt}-${activeMethod.key}`,
-        at: startedAt,
-        title: activeMethod.title,
-        endpoint: activeMethod.endpoint,
-        status: 0,
-        ok: false,
-        preview: "Network error",
-      });
-      showToast("Network error", { type: "error" });
+      await executeMethod(activeMethod, { showToastOnSuccess: true, showToastOnError: true });
     } finally {
       setRunning("");
     }
+  }
+
+  async function runSelectedBatch() {
+    if (!selectedMethods.length) {
+      showToast("Select at least one method", { type: "error" });
+      return;
+    }
+
+    setBatchRunning(true);
+    setBatchSummary(null);
+
+    const summary = {
+      total: selectedMethods.length,
+      ok: 0,
+      failed: 0,
+      items: [],
+    };
+
+    for (let i = 0; i < selectedMethods.length; i += 1) {
+      const method = selectedMethods[i];
+      setRunning(method.key);
+      const result = await executeMethod(method, {
+        showToastOnSuccess: false,
+        showToastOnError: false,
+      });
+
+      if (result.ok) summary.ok += 1;
+      else summary.failed += 1;
+      summary.items.push({ key: method.key, title: method.title, ok: result.ok, status: result.status });
+
+      if (i < selectedMethods.length - 1) {
+        // Simple fixed delay prevents request bursts to external APIs.
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
+      }
+    }
+
+    setRunning("");
+    setBatchRunning(false);
+    setBatchSummary(summary);
+
+    if (summary.failed === 0) showToast(`Batch finished: ${summary.ok}/${summary.total} succeeded`, { type: "success" });
+    else showToast(`Batch finished: ${summary.ok} success, ${summary.failed} failed`, { type: "info" });
+  }
+
+  function exportPresets() {
+    try {
+      const json = JSON.stringify(presets, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `methods-lab-presets-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("Presets exported", { type: "success" });
+    } catch {
+      showToast("Failed to export presets", { type: "error" });
+    }
+  }
+
+  function openImportDialog() {
+    importInputRef.current?.click();
+  }
+
+  async function importPresetsFromFile(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== "object") throw new Error("Invalid format");
+
+      const cleaned = {};
+      for (const method of METHODS) {
+        const rows = Array.isArray(parsed[method.key]) ? parsed[method.key] : [];
+        cleaned[method.key] = rows
+          .filter((row) => row && typeof row.name === "string" && typeof row.payload === "string")
+          .map((row) => ({
+            name: row.name,
+            payload: row.payload,
+            savedAt: row.savedAt || new Date().toISOString(),
+          }))
+          .slice(0, 20);
+      }
+
+      persistPresets(cleaned);
+      showToast("Presets imported", { type: "success" });
+    } catch {
+      showToast("Invalid presets file", { type: "error" });
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+  function toggleSelect(key) {
+    setSelected((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  function selectAll() {
+    setSelected(Object.fromEntries(METHODS.map((m) => [m.key, true])));
+  }
+
+  function selectNone() {
+    setSelected(Object.fromEntries(METHODS.map((m) => [m.key, false])));
   }
 
   function resetCurrent() {
@@ -344,15 +470,28 @@ export default function MethodsLabPage() {
 
         <section className="workspace">
           <aside className="methods">
-            {METHODS.map((method) => (
-              <button
-                key={method.key}
-                className={`method-btn ${active === method.key ? "active" : ""}`}
-                onClick={() => setActive(method.key)}
-              >
-                <span>{method.title}</span>
-                <small>{method.endpoint}</small>
+            <div className="batch-controls">
+              <button className="ghost" onClick={selectAll}>Select all</button>
+              <button className="ghost" onClick={selectNone}>Select none</button>
+              <button className="run" onClick={runSelectedBatch} disabled={batchRunning || selectedMethods.length === 0}>
+                {batchRunning ? "Running batch..." : `Run selected (${selectedMethods.length})`}
               </button>
+            </div>
+            {METHODS.map((method) => (
+              <div key={method.key} className={`method-item ${active === method.key ? "active" : ""}`}>
+                <input
+                  type="checkbox"
+                  checked={!!selected[method.key]}
+                  onChange={() => toggleSelect(method.key)}
+                />
+                <button
+                  className={`method-btn ${active === method.key ? "active" : ""}`}
+                  onClick={() => setActive(method.key)}
+                >
+                  <span>{method.title}</span>
+                  <small>{method.endpoint}</small>
+                </button>
+              </div>
             ))}
           </aside>
 
@@ -373,6 +512,15 @@ export default function MethodsLabPage() {
                 placeholder="Preset name"
               />
               <button className="ghost" onClick={savePreset}>Save Preset</button>
+              <button className="ghost" onClick={exportPresets}>Export</button>
+              <button className="ghost" onClick={openImportDialog}>Import</button>
+              <input
+                ref={importInputRef}
+                type="file"
+                accept="application/json,.json"
+                onChange={importPresetsFromFile}
+                style={{ display: "none" }}
+              />
             </div>
             {activePresets.length > 0 && (
               <div className="preset-list">
@@ -425,6 +573,24 @@ export default function MethodsLabPage() {
             </div>
           )}
         </section>
+        {batchSummary && (
+          <section className="history">
+            <div className="history-head">
+              <h2>Last Batch Summary</h2>
+            </div>
+            <p className="muted">{batchSummary.ok} succeeded, {batchSummary.failed} failed, total {batchSummary.total}</p>
+            <div className="history-list">
+              {batchSummary.items.map((item) => (
+                <article key={item.key} className={`history-item ${item.ok ? "ok" : "fail"}`}>
+                  <div className="line1">
+                    <strong>{item.title}</strong>
+                    <span>{item.status === 0 ? "network" : `HTTP ${item.status}`}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
       <style jsx>{`
@@ -470,6 +636,27 @@ export default function MethodsLabPage() {
           align-content: start;
           max-height: 680px;
           overflow: auto;
+        }
+        .batch-controls {
+          display: grid;
+          gap: 6px;
+          padding: 8px;
+          border: 1px solid #d4dee2;
+          border-radius: 10px;
+          background: #f8fafc;
+        }
+        .method-item {
+          display: grid;
+          grid-template-columns: auto 1fr;
+          gap: 8px;
+          align-items: center;
+          border: 1px solid transparent;
+          border-radius: 10px;
+          padding: 4px;
+        }
+        .method-item.active {
+          border-color: #ccfbf1;
+          background: #f0fdfa;
         }
         .method-btn {
           border: 1px solid #d4dee2;
