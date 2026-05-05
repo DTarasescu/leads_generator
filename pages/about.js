@@ -46,6 +46,43 @@ const faq = [
   },
 ];
 
+const plans = [
+  {
+    name: "Starter",
+    subtitle: "Solo operators",
+    features: [
+      "Lead inbox and manual discovery",
+      "Basic AI scoring and message generation",
+      "Email outreach templates",
+      "Core analytics overview",
+    ],
+    cta: "Good for first campaigns",
+  },
+  {
+    name: "Growth",
+    subtitle: "Small sales teams",
+    featured: true,
+    features: [
+      "All discovery channels + Methods Lab",
+      "Batch execution and reusable presets",
+      "CRM sync + multi-channel outreach",
+      "A/B tests and advanced scoring workflows",
+    ],
+    cta: "Most balanced setup",
+  },
+  {
+    name: "Scale",
+    subtitle: "Revenue operations",
+    features: [
+      "High-volume automation playbooks",
+      "Webhook-heavy inbound pipelines",
+      "Cross-team preset sharing",
+      "Operational dashboards and optimization loops",
+    ],
+    cta: "For full-funnel execution",
+  },
+];
+
 export default function AboutPage() {
   const [user, setUser] = useState(null);
 
@@ -139,6 +176,46 @@ export default function AboutPage() {
                 <summary>{item.q}</summary>
                 <p>{item.a}</p>
               </details>
+            ))}
+          </div>
+        </section>
+
+        <section className="section">
+          <h2>Live Demo Preview</h2>
+          <div className="demo-video">
+            <div className="video-shell">
+              <div className="video-head">Leads Generator Demo</div>
+              <div className="video-body">
+                <p>
+                  Replace this preview with your recorded product walkthrough.
+                  Suggested flow: Discover leads, score and prioritize, launch outreach, then review analytics.
+                </p>
+                <div className="video-actions">
+                  <Link href={user ? "/discover-leads" : "/"} className="btn-primary">Open Discover</Link>
+                  <Link href="/methods-lab" className="btn-secondary demo-secondary">Open Methods Lab</Link>
+                </div>
+              </div>
+            </div>
+            <p className="video-note">
+              Tip: swap this block with an embedded video iframe from YouTube, Loom, or your own CDN when ready.
+            </p>
+          </div>
+        </section>
+
+        <section className="section">
+          <h2>Plan Comparison</h2>
+          <div className="plans-grid">
+            {plans.map((plan) => (
+              <article key={plan.name} className={`plan-card ${plan.featured ? "featured" : ""}`}>
+                <p className="plan-name">{plan.name}</p>
+                <p className="plan-subtitle">{plan.subtitle}</p>
+                <ul>
+                  {plan.features.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+                <p className="plan-cta">{plan.cta}</p>
+              </article>
             ))}
           </div>
         </section>
@@ -342,6 +419,95 @@ export default function AboutPage() {
           font-size: 0.88rem;
           color: #334155;
           line-height: 1.45;
+        }
+        .demo-video {
+          display: grid;
+          gap: 10px;
+        }
+        .video-shell {
+          border: 1px solid #cbd5e1;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #0f172a;
+          color: #f8fafc;
+        }
+        .video-head {
+          padding: 8px 12px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+          font-size: 0.82rem;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
+          opacity: 0.9;
+        }
+        .video-body {
+          padding: 16px;
+          min-height: 180px;
+          display: grid;
+          align-content: center;
+          gap: 12px;
+        }
+        .video-body p {
+          margin: 0;
+          line-height: 1.5;
+          color: #cbd5e1;
+        }
+        .video-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .demo-secondary {
+          border-color: rgba(255, 255, 255, 0.35);
+          color: #f8fffd;
+        }
+        .video-note {
+          margin: 0;
+          color: #64748b;
+          font-size: 0.84rem;
+        }
+        .plans-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 10px;
+        }
+        .plan-card {
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 12px;
+          background: #f8fafc;
+        }
+        .plan-card.featured {
+          border-color: #0f766e;
+          background: #ecfeff;
+          box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.2);
+        }
+        .plan-name {
+          margin: 0;
+          font-size: 1rem;
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .plan-subtitle {
+          margin: 4px 0 8px;
+          color: #64748b;
+          font-size: 0.84rem;
+        }
+        .plan-card ul {
+          margin: 0;
+          padding-left: 18px;
+          display: grid;
+          gap: 6px;
+        }
+        .plan-card li {
+          color: #334155;
+          font-size: 0.86rem;
+          line-height: 1.35;
+        }
+        .plan-cta {
+          margin: 10px 0 0;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: #0f766e;
         }
         .callout p {
           margin: 0;
