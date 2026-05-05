@@ -1,0 +1,28 @@
+{
+  "name": "leads-generator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 3400",
+    "lint": "next lint",
+    "db:migrate": "node scripts/migrate.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "smoke:leads": "node scripts/smoke-leads.mjs"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@supabase/supabase-js": "^2.43.0",
+    "nodemailer": "^6.9.13",
+    "openai": "^4.52.0",
+    "axios": "^1.7.2",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.0"
+  }
+}
