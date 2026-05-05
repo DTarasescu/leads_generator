@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { supabase } from "../lib/supabase";
 import { useToast } from "../components/ToastProvider";
 
@@ -67,6 +68,9 @@ export default function LoginPage() {
   return (
     <div className="page">
       <div className="card">
+        <div className="top-links">
+          <Link href="/about">About</Link>
+        </div>
         <div className="logo">🎯</div>
         <h1>Leads Generator</h1>
         <p className="sub">AI-powered lead discovery for service businesses</p>
@@ -129,6 +133,26 @@ export default function LoginPage() {
           width: 100%;
           max-width: 420px;
           text-align: center;
+          position: relative;
+        }
+        .top-links {
+          position: absolute;
+          top: 14px;
+          right: 14px;
+        }
+        .top-links a {
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          padding: 6px 10px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: var(--muted);
+          text-decoration: none;
+          transition: all 0.16s;
+        }
+        .top-links a:hover {
+          color: var(--accent);
+          border-color: var(--accent);
         }
         .logo { font-size: 3rem; margin-bottom: 12px; }
         h1 {

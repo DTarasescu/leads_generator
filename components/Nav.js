@@ -15,6 +15,7 @@ export default function Nav({ user }) {
 
   const links = [
     { href: "/leads-inbox", label: "📋 Pipeline" },
+    { href: "/about", label: "ℹ️ About" },
     { href: "/pipeline-playbook", label: "🧭 Playbook" },
     { href: "/discover-leads", label: "🔍 Discover" },
     { href: "/methods-lab", label: "🧪 Methods" },
