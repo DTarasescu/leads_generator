@@ -17,6 +17,7 @@ export default function Nav({ user }) {
     { href: "/leads-inbox", label: "📋 Pipeline" },
     { href: "/pipeline-playbook", label: "🧭 Playbook" },
     { href: "/discover-leads", label: "🔍 Discover" },
+    { href: "/methods-lab", label: "🧪 Methods" },
     { href: "/analytics", label: "📊 Analytics" },
     { href: "/automation", label: "⚙️ Automation" },
     { href: "/capture", label: "📝 Capture" },
