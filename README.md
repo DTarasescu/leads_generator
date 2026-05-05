@@ -63,8 +63,8 @@ Companion product to [ai-client-recovery](https://github.com/DTarasescu/ai-clien
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/DTarasescu/leads_generator.git
-cd leads_generator
+git clone https://github.com/DTarasescu/leads-generator.git
+cd leads-generator
 npm install
 ```
 

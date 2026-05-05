@@ -1,4 +1,4 @@
--- Migration 001: Initial schema for leads_generator
+-- Migration 001: Initial schema for leads-generator
 -- Run this in the Supabase SQL Editor
 
 -- ─────────────────────────────────────────────

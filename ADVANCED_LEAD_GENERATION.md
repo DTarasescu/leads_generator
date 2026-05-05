@@ -1,6 +1,6 @@
 # 12 New Advanced Lead Generation Tools
 
-This document details 12 additional lead generation tools added to the leads_generator app. Combined with the original 20 methods, the app now supports 32 proven lead generation channels.
+This document details 12 additional lead generation tools added to the leads-generator app. Combined with the original 20 methods, the app now supports 32 proven lead generation channels.
 
 ## API Endpoints Overview
 

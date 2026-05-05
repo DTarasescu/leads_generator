@@ -1,7 +1,7 @@
 # Leads Generator — Full Implementation Plan
 
 > **Companion product to ai-client-recovery.**
-> While ai-client-recovery recovers dormant clients, leads_generator finds *new* clients for service businesses.
+> While ai-client-recovery recovers dormant clients, leads-generator finds *new* clients for service businesses.
 
 ---
 
@@ -25,7 +25,7 @@
 
 ### What This Step Covers
 - Run a clean production build and fix any compile errors
-- Configure PM2 process manager for leads_generator (port 3400)
+- Configure PM2 process manager for leads-generator (port 3400)
 - Create nginx virtual host pointing to port 3400
 - Issue SSL certificate with Certbot
 - Write a reusable deploy script
@@ -36,7 +36,7 @@
 
 **Copilot request:**
 ```
-Run `npm run build` in the leads_generator directory.
+Run `npm run build` in the leads-generator directory.
 Show me every TypeScript/ESLint error that appears.
 For each error explain the cause and provide the exact fix.
 Do not modify working logic — only fix compile/lint issues.
@@ -44,7 +44,7 @@ Do not modify working logic — only fix compile/lint issues.
 
 **What to do manually:**
 ```bash
-cd leads_generator
+cd leads-generator
 npm install
 npm run build
 ```
@@ -125,7 +125,7 @@ Use DOMAIN variable at top of script. Never touch other nginx sites.
 
 **Copilot request (Option — cloud deploy instead of VPS):**
 ```
-Create `render.yaml` for Render.com deployment of leads_generator:
+Create `render.yaml` for Render.com deployment of leads-generator:
 - service type: web
 - runtime: node
 - build command: npm ci && npm run build
@@ -422,17 +422,17 @@ All Step 7 + Step 8 work lives on a feature branch:
 # In ai-client-recovery repo — push this plan as a reference branch
 git checkout -b feature/leads-generator-plan
 git add docs/LEADS_GENERATOR_IMPLEMENTATION.md
-git commit -m "docs: add leads_generator Step 7 + Step 8 implementation plan"
+git commit -m "docs: add leads-generator Step 7 + Step 8 implementation plan"
 git push origin feature/leads-generator-plan
 ```
 
-The actual code lives in the `leads_generator` standalone repo.
+The actual code lives in the `leads-generator` standalone repo.
 
 ---
 
 ## Shared Infrastructure Between Projects
 
-| Resource | ai-client-recovery | leads_generator |
+| Resource | ai-client-recovery | leads-generator |
 |---|---|---|
 | Supabase project | Same (multi-product) | Same |
 | WhatsApp sender | Port 3500 | Port 3500 (shared) |

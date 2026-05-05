@@ -1,0 +1,25 @@
+{
+  "name": "leads-generator",
+  "version": 2,
+  "public": false,
+  "env": {
+    "NEXT_PUBLIC_APP_DOMAIN": "leads-generator.ai-client-recovery.com",
+    "NEXT_PUBLIC_APP_BASE": "https://leads-generator.ai-client-recovery.com"
+  },
+  "domains": [
+    "leads-generator.ai-client-recovery.com"
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/pages/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/pages/$1"
+    }
+  ],
+  "buildCommand": "npm run build",
+  "framework": "nextjs",
+  "outputDirectory": ".next"
+}

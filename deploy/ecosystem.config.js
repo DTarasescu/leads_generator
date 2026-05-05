@@ -3,7 +3,7 @@ module.exports = {
     name: 'leads-generator',
     script: 'node_modules/.bin/next',
     args: 'start -p 3400',
-    cwd: '/var/www/leads_generator',
+    cwd: '/var/www/leads-generator',
     env: {
       NODE_ENV: 'production',
       PORT: 3400,

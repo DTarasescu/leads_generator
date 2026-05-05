@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// smoke-leads.mjs — Smoke test for leads_generator API
+// smoke-leads.mjs — Smoke test for leads-generator API
 // Usage: node scripts/smoke-leads.mjs [BASE_URL]
 // Requires Node 18+
 

@@ -1,12 +1,13 @@
 #!/bin/bash
-# Deploy leads_generator to Ubuntu server
+# Deploy leads-generator to Ubuntu server
+# Domain: leads-generator.ai-client-recovery.com
 # Safe: idempotent — never modifies existing nginx sites or other app directories
 
 set -e
 
-DOMAIN="leads-generator.yourdomain.com"
-APP_DIR="/var/www/leads_generator"
-REPO="https://github.com/DTarasescu/leads_generator.git"
+DOMAIN="leads-generator.ai-client-recovery.com"
+APP_DIR="/var/www/leads-generator"
+REPO="https://github.com/DTarasescu/leads-generator.git"
 NGINX_CONF="/etc/nginx/sites-available/leads-generator.conf"
 NGINX_ENABLED="/etc/nginx/sites-enabled/leads-generator.conf"
 
