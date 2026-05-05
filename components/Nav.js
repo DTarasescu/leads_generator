@@ -14,9 +14,11 @@ export default function Nav({ user }) {
   }
 
   const links = [
-    { href: "/leads-inbox", label: "Pipeline" },
-    { href: "/discover-leads", label: "Discover" },
-    { href: "/capture", label: "Capture Page" },
+    { href: "/leads-inbox", label: "📋 Pipeline" },
+    { href: "/discover-leads", label: "🔍 Discover" },
+    { href: "/analytics", label: "📊 Analytics" },
+    { href: "/automation", label: "⚙️ Automation" },
+    { href: "/capture", label: "📝 Capture" },
   ];
 
   return (

@@ -10,12 +10,38 @@ Companion product to [ai-client-recovery](https://github.com/DTarasescu/ai-clien
 
 ## Features
 
+### Core Lead Generation
 - **Lead Discovery** — Search Google Places by business type + location; get up to 20 leads per search
-- **AI Lead Scoring** — Each lead scored 1–100 by OpenRouter AI with a one-line reason
-- **Outreach Generation** — AI writes personalised cold-outreach messages per lead
-- **WhatsApp & Email Send** — Send directly from the app
+- **AI Lead Scoring** — Each lead scored 1–100 by OpenRouter AI with rule-based + AI hybrid engine
+- **LinkedIn Lead Scraper** — Extract prospect emails from LinkedIn profiles (via Hunter.io)
+- **Outreach Generation** — AI writes personalized cold-outreach messages per lead
+- **Leads Pipeline** — Status tracking: New → Contacted → Qualified → Converted → Rejected
 - **Inbound Capture** — Public landing page + Typeform/JotForm webhooks
-- **Leads Pipeline** — Status tracking: New → Contacted → Qualified → Converted
+
+### Multi-Channel Outreach
+- **Email Templates** — Customizable templates with {{variables}} (name, business_type, city, email)
+- **SMS Templates** — Pre-formatted SMS messages (via Twilio)
+- **WhatsApp Outreach** — Send messages via Twilio WhatsApp API
+- **Email Send** — Nodemailer SMTP integration (Gmail, custom SMTP)
+
+### Automation
+- **Nurture Sequences** — Auto-send multi-step follow-ups (email, SMS, WhatsApp)
+- **Sequence Scheduler** — Cron-based task runner (process steps every 5–15 min)
+- **Lead Enrollment** — Enroll leads in sequences, pause/resume/complete flows
+
+### Advanced Scoring
+- **Custom Scoring Rules** — Business type, location, website quality, reviews, ratings
+- **Hybrid Scoring** — Rule-based + AI-powered (combines both for accuracy)
+
+### CRM Integrations
+- **Pipedrive Sync** — Auto-sync leads as deals
+- **HubSpot Sync** — Auto-sync as contacts
+- **Salesforce Sync** — Auto-sync to Salesforce objects
+
+### Analytics
+- **Dashboard** — Real-time metrics: total leads, conversion rate, avg score, source breakdown
+- **Charts** — Status distribution, source breakdown, outreach channel usage
+- **Metrics Cache** — Daily aggregations for performance
 
 ---
 
