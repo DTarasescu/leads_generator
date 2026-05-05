@@ -122,6 +122,109 @@ const METHODS = [
       page_url: "https://example.com",
     },
   },
+  {
+    key: "redditMonitor",
+    title: "Reddit Buying Signals",
+    endpoint: "/api/reddit-monitor",
+    defaultPayload: {
+      subreddits: ["entrepreneur", "smallbusiness", "marketing", "startups"],
+      keywords: ["need a website", "looking for developer", "hire designer", "recommend an agency"],
+      limit: 25,
+    },
+  },
+  {
+    key: "yelpDiscover",
+    title: "Yelp Local Discovery",
+    endpoint: "/api/yelp-discover",
+    defaultPayload: {
+      term: "dentist",
+      location: "Chicago, IL",
+      radius: 10000,
+      limit: 20,
+      sort_by: "rating",
+    },
+  },
+  {
+    key: "productHunt",
+    title: "Product Hunt Launches",
+    endpoint: "/api/product-hunt-leads",
+    defaultPayload: {
+      topics: ["saas", "marketing", "productivity"],
+      days_ago: 7,
+      min_votes: 50,
+      limit: 20,
+    },
+  },
+  {
+    key: "jobBoardLeads",
+    title: "Job Board Signals",
+    endpoint: "/api/job-board-leads",
+    defaultPayload: {
+      roles: ["marketing manager", "head of growth", "sales director"],
+      location: "us",
+      limit: 20,
+    },
+  },
+  {
+    key: "companyNews",
+    title: "Company News Monitor",
+    endpoint: "/api/company-news",
+    defaultPayload: {
+      company_names: ["Stripe", "Notion", "Linear", "Vercel"],
+      news_types: ["funding", "hiring", "expansion"],
+    },
+  },
+  {
+    key: "socialDiscovery",
+    title: "Social Media Discovery",
+    endpoint: "/api/social-discovery",
+    defaultPayload: {
+      keywords: ["need marketing help", "growing startup", "B2B SaaS"],
+      platform: "twitter",
+      min_followers: 100,
+    },
+  },
+  {
+    key: "emailEnrichment",
+    title: "Email Enrichment",
+    endpoint: "/api/email-enrichment",
+    defaultPayload: {
+      emails: ["founder@example.com", "ceo@startupco.io"],
+    },
+  },
+  {
+    key: "leadListBuilder",
+    title: "Lead List Builder",
+    endpoint: "/api/lead-list-builder",
+    defaultPayload: {
+      list_name: "High-Score New Leads",
+      filters: {
+        status: "new",
+        score_min: 60,
+      },
+      limit: 100,
+    },
+  },
+  {
+    key: "redditSignals",
+    title: "Reddit Signal Monitor",
+    endpoint: "/api/reddit-signal-monitor",
+    defaultPayload: {
+      subreddits: ["smallbusiness", "entrepreneur", "startups", "SaaS"],
+      keywords: ["need help", "looking for", "struggling with", "recommend"],
+      limit: 20,
+      save_leads: true,
+    },
+  },
+  {
+    key: "competitorAnalysis",
+    title: "Competitor Analysis",
+    endpoint: "/api/competitor-analysis",
+    defaultPayload: {
+      competitor_url: "https://competitor.com",
+      your_strengths: ["faster onboarding", "better pricing", "local support"],
+    },
+  },
 ];
 
 function initPayloads(userEmail) {
