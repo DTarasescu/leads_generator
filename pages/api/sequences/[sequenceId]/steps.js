@@ -1,5 +1,5 @@
-import { createRequestClient, createAdminClient } from "../../../lib/supabase";
-import { getAccessToken } from "../../../lib/api-utils";
+import { createRequestClient, createAdminClient } from "../../../../../lib/supabase";
+import { getAccessToken } from "../../../../../lib/api-utils";
 
 export default async function handler(req, res) {
   const token = getAccessToken(req);

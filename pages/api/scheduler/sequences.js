@@ -1,4 +1,4 @@
-import { createAdminClient } from "../../lib/supabase";
+import { createAdminClient } from "../../../lib/supabase";
 import nodemailer from "nodemailer";
 
 // Scheduler endpoint (should be called every 5-15 min by external cron)
