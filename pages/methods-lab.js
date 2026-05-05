@@ -5,6 +5,9 @@ import { API_BASE } from "../lib/api-utils";
 import Nav from "../components/Nav";
 import { useToast } from "../components/ToastProvider";
 
+const HISTORY_STORAGE_KEY = "methods-lab-history";
+const PRESETS_STORAGE_KEY = "methods-lab-presets";
+
 const METHODS = [
   {
     key: "googleReviews",
@@ -144,6 +147,8 @@ export default function MethodsLabPage() {
   const [active, setActive] = useState(METHODS[0].key);
   const [running, setRunning] = useState("");
   const [history, setHistory] = useState([]);
+  const [presets, setPresets] = useState({});
+  const [presetName, setPresetName] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -157,12 +162,22 @@ export default function MethodsLabPage() {
       const hydrated = initPayloads(session.user?.email || "");
       setPayloads(hydrated);
 
-      const saved = localStorage.getItem("methods-lab-history");
+      const saved = localStorage.getItem(HISTORY_STORAGE_KEY);
       if (saved) {
         try {
           setHistory(JSON.parse(saved));
         } catch {
           setHistory([]);
+        }
+      }
+
+      const savedPresets = localStorage.getItem(PRESETS_STORAGE_KEY);
+      if (savedPresets) {
+        try {
+          const parsed = JSON.parse(savedPresets);
+          if (parsed && typeof parsed === "object") setPresets(parsed);
+        } catch {
+          setPresets({});
         }
       }
     });
@@ -177,9 +192,62 @@ export default function MethodsLabPage() {
   function appendHistory(entry) {
     setHistory((prev) => {
       const next = [entry, ...prev].slice(0, 40);
-      localStorage.setItem("methods-lab-history", JSON.stringify(next));
+      localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(next));
       return next;
     });
+  }
+
+  function persistPresets(nextPresets) {
+    setPresets(nextPresets);
+    localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(nextPresets));
+  }
+
+  function savePreset() {
+    if (!activeMethod) return;
+    const name = presetName.trim();
+    if (!name) {
+      showToast("Preset name is required", { type: "error" });
+      return;
+    }
+
+    try {
+      JSON.parse(payloads[activeMethod.key] || "{}");
+    } catch {
+      showToast("Cannot save invalid JSON payload", { type: "error" });
+      return;
+    }
+
+    const current = presets[activeMethod.key] || [];
+    const next = {
+      ...presets,
+      [activeMethod.key]: [
+        { name, payload: payloads[activeMethod.key], savedAt: new Date().toISOString() },
+        ...current.filter((x) => x.name !== name),
+      ].slice(0, 20),
+    };
+    persistPresets(next);
+    showToast(`Preset saved: ${name}`, { type: "success" });
+    setPresetName("");
+  }
+
+  function loadPreset(name) {
+    if (!activeMethod) return;
+    const entries = presets[activeMethod.key] || [];
+    const match = entries.find((x) => x.name === name);
+    if (!match) return;
+    setPayloads((prev) => ({ ...prev, [activeMethod.key]: match.payload }));
+    showToast(`Preset loaded: ${name}`, { type: "info" });
+  }
+
+  function deletePreset(name) {
+    if (!activeMethod) return;
+    const entries = presets[activeMethod.key] || [];
+    const next = {
+      ...presets,
+      [activeMethod.key]: entries.filter((x) => x.name !== name),
+    };
+    persistPresets(next);
+    showToast(`Preset deleted: ${name}`, { type: "info" });
   }
 
   async function runCurrent() {
@@ -261,6 +329,8 @@ export default function MethodsLabPage() {
     setPayloads((prev) => ({ ...prev, [activeMethod.key]: text }));
   }
 
+  const activePresets = activeMethod ? presets[activeMethod.key] || [] : [];
+
   if (!user) return null;
 
   return (
@@ -296,6 +366,24 @@ export default function MethodsLabPage() {
                 </button>
               </div>
             </div>
+            <div className="preset-row">
+              <input
+                value={presetName}
+                onChange={(e) => setPresetName(e.target.value)}
+                placeholder="Preset name"
+              />
+              <button className="ghost" onClick={savePreset}>Save Preset</button>
+            </div>
+            {activePresets.length > 0 && (
+              <div className="preset-list">
+                {activePresets.map((item) => (
+                  <div key={item.name} className="preset-item">
+                    <button className="pill" onClick={() => loadPreset(item.name)}>{item.name}</button>
+                    <button className="mini-delete" onClick={() => deletePreset(item.name)}>x</button>
+                  </div>
+                ))}
+              </div>
+            )}
             <p className="endpoint">Endpoint: {activeMethod?.endpoint}</p>
             <textarea
               value={payloads[activeMethod?.key] || ""}
@@ -312,7 +400,7 @@ export default function MethodsLabPage() {
             <button
               className="ghost"
               onClick={() => {
-                localStorage.removeItem("methods-lab-history");
+                localStorage.removeItem(HISTORY_STORAGE_KEY);
                 setHistory([]);
               }}
             >
@@ -418,6 +506,48 @@ export default function MethodsLabPage() {
           margin: 5px 0 10px;
           color: #64748b;
           font-size: 0.84rem;
+        }
+        .preset-row {
+          margin-top: 10px;
+          display: flex;
+          gap: 8px;
+        }
+        .preset-row input {
+          flex: 1;
+          border: 1px solid #d4dee2;
+          border-radius: 9px;
+          padding: 8px 10px;
+          font-size: 0.85rem;
+        }
+        .preset-list {
+          margin-top: 8px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .preset-item {
+          display: inline-flex;
+          align-items: center;
+          border: 1px solid #d4dee2;
+          border-radius: 999px;
+          background: #f8fafc;
+        }
+        .pill {
+          border: none;
+          background: transparent;
+          color: #0f766e;
+          font-size: 0.78rem;
+          font-weight: 700;
+          padding: 5px 10px;
+        }
+        .mini-delete {
+          border: none;
+          background: transparent;
+          color: #64748b;
+          font-size: 0.78rem;
+          font-weight: 700;
+          padding: 5px 8px;
+          cursor: pointer;
         }
         textarea {
           width: 100%;
