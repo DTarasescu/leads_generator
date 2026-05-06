@@ -22,6 +22,7 @@ export default function Nav({ user }) {
     { href: "/analytics", label: "📊 Analytics" },
     { href: "/automation", label: "⚙️ Automation" },
     { href: "/capture", label: "📝 Capture" },
+    { href: "/crm-integrations", label: "🔗 CRM" },
   ];
 
   return (
